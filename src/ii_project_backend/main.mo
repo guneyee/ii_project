@@ -111,6 +111,102 @@ actor NaturalDisasterRelief {
     donationPlaces := Array.append(donationPlaces, [newPlace]);
     return id;
   };
+// Function: Sorting Donors by Amount Donated (Top Donors)
+public query shared() : async [User] {
+  // Returns users sorted by donation amount
+  return Array.sort(users, |user1, user2| {
+    user2.donatedAmount - user1.donatedAmount // Descending order
+  });
+};
+
+// Function: Sorting Donors by Amount Donated (Least Donors)
+public query shared() : async [User] {
+  // Returns users sorted by donation amount
+  return Array.sort(users, |user1, user2| {
+    user1.donatedAmount - user2.donatedAmount // Ascending order
+  });
+};
+
+// Function: Updating Information of Donation Places
+public shared({ placeId, newName, newLocation }: { placeId: Nat; newName: Text; newLocation: Text }) : async Bool {
+  if (placeId >= Array.length(donationPlaces)) {
+    return false; // Invalid place ID
+  } else {
+    donationPlaces[placeId].name := newName;
+    donationPlaces[placeId].location := newLocation;
+    return true;
+  }
+};
+
+// Function: Removing Donation Places
+public shared({ placeId }: { placeId: Nat }) : async Bool {
+  if (placeId >= Array.length(donationPlaces)) {
+    return false; // Invalid place ID
+  } else {
+    donationPlaces := Array.removeAt(donationPlaces, placeId);
+    return true;
+  }
+};
+
+// Function: Updating User Names
+public shared({ userId, newName }: { userId: Nat; newName: Text }) : async Bool {
+  if (userId >= Array.length(users)) {
+    return false; // Invalid user ID
+  } else {
+    users[userId].name := newName;
+    return true;
+  }
+};
+
+// Function: Listing Donations of a Specific User
+public query shared({ userId }: { userId: Nat }) : async ?Nat {
+  if (userId >= Array.length(users)) {
+    return null; // Invalid user ID
+  } else {
+    return users[userId].donatedAmount;
+  }
+};
+
+// Function: Donation Transfer Between Users
+public shared({ fromUserId, toUserId, amount }: { fromUserId: Nat; toUserId: Nat; amount: Nat }) : async Bool {
+  if (fromUserId >= Array.length(users) || toUserId >= Array.length(users)) {
+    return false; // Invalid user ID
+  } else if (users[fromUserId].donatedAmount < amount) {
+    return false; // Insufficient balance
+  } else {
+    users[fromUserId].donatedAmount -= amount;
+    users[toUserId].donatedAmount += amount;
+    return true;
+  }
+};
+// Function: Donation Transfer Between Users
+public shared({ fromUserId, toUserId, amount }: { fromUserId: Nat; toUserId: Nat; amount: Nat }) : async Bool {
+  if (fromUserId >= Array.length(users) || toUserId >= Array.length(users)) {
+    return false; // Invalid user ID
+  } else if (users[fromUserId].donatedAmount < amount) {
+    return false; // Insufficient balance
+  } else {
+    users[fromUserId].donatedAmount -= amount;
+    users[toUserId].donatedAmount += amount;
+    return true;
+  }
+};
+
+// Function: Listing Recipients of Aid
+public query shared() : async [User] {
+  // Returns users in need of assistance (e.g., you can filter based on certain criteria)
+  return Array.filter(users, |user| {
+    user.donatedAmount == 0 // Lists users who haven't donated yet
+  });
+};
+
+// Function: Listing Recipients of Aid
+public query shared() : async [User] {
+  // Returns users in need of assistance (e.g., you can filter based on certain criteria)
+  return Array.filter(users, |user| {
+    user.donatedAmount == 0 // Lists users who haven't donated yet
+  });
+};
 
   // Function to get all donation places
   public query shared() : async [DonationPlace] {
